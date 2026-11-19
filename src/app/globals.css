@@ -1,0 +1,28 @@
+body {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+label {
+    margin-right: 20px;
+}
+
+input[type="range"] {
+    border-radius: 50px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track, input[type="range"]::-moz-range-track {
+    height: 0.5rem;
+    background-color: #8A3D60;
+    border-radius: 0.25rem;
+}
+
+input[type="range"]::-webkit-slider-thumb, input[type="range"]::-moz-range-thumb {
+    appearance: none;
+    height: 1rem;
+    width: 1rem;
+    margin-top: calc(-0.25rem);
+    border-radius: 0.5rem;
+    box-shadow: 200px 0 0 200px rgba(255, 255, 255, 0.2), 0px 0px 0px 20px inset #6e314c;
+    clip-path: polygon(round 1rem, -1rem 0, 200px 0, 200px 1rem, -1rem 1rem);
+}

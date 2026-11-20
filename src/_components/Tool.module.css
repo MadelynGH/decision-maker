@@ -1,3 +1,47 @@
 .prompt {
     margin-bottom: 0;
 }
+
+.icon {
+    appearance: none;
+    background-color: transparent;
+    border-radius: 5px;
+    width: 30px;
+    height: 30px;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon::after {
+    margin-top: -2.7px;
+}
+
+.smile {
+    color: green;
+    border: 1px solid green;
+}
+
+.smile::after {
+    content: "\263A";
+}
+
+.smile:checked {
+    background-color: green;
+    color: white;
+} 
+
+.frown {
+    color: darkred;
+    border: 1px solid darkred;
+}
+
+.frown::after {
+    content: "\2639";
+}
+
+.frown:checked {
+    background-color: darkred;
+    color: white;
+}

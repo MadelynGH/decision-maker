@@ -88,7 +88,7 @@ export default function Tool() {
             for (let n in criteria) {
                 let currentHigh = criteriaPolarity[n] ? -1 : 11;
                 let theseScores = [];
-                for (let nn in options) {
+                for (let nn of tiedOptions) {
                     theseScores.push(criteriaEvaluations[n][nn]);
                     if (criteriaPolarity[n] ? (criteriaEvaluations[n][nn] > currentHigh) : (criteriaEvaluations[n][nn] < currentHigh)) {
                         currentHigh = criteriaEvaluations[n][nn];
@@ -96,7 +96,7 @@ export default function Tool() {
                 }
 
                 let tiedScores = [];
-                options.forEach((i, n) => {
+                tiedOptions.forEach((n) => {
                     if (theseScores[n] == currentHigh) {
                         tiedScores.push(n);
                     }

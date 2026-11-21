@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Tool.module.css";
 import { Noto_Sans_Symbols, Montserrat } from "next/font/google";
 
@@ -11,41 +11,21 @@ const montserrat = Montserrat({
     weight: ["400", "500", "600", "700", "800"]
 });
 
-function Option({ optionName, optionCriteriaEvals, criteriaPolarity }) {
-    return (
-        <div style={{
-            boxShadow: "0px 0px 10px 5px lightblue",
-            padding: "20px",
-            borderRadius: "20px",
-            margin: "20px"
-        }}>
-            <h4>{optionName}</h4>
-            {Object.keys(optionCriteriaEvals()).map((i, n) => 
-                <p key={n}><span style={{
-                    fontWeight: "500"
-                }}>{i}:</span> <span style={{
-                    color: criteriaPolarity[n] ? "green" : "darkred"
-                }}>{optionCriteriaEvals()[i]}</span></p>
-            )}
-        </div>
-    );
-}
-
 export default function Tool() {
     const [stage, updateStage] = useState(0);
     const [decisionName, updateDecisionName] = useState("");
     const [options, updateOptions] = useState([""]);
     const [criteria, updateCriteria] = useState([""]);
     const [criteriaPolarity, updateCriteriaPolarity] = useState([true]);
-    const [criteriaEvaluations, updateCriteriaEvaluations] = useState({});
+    const [criteriaEvaluations, updateCriteriaEvaluations] = useState([]);
 
     useEffect(() => {
         if (stage == 3) {
-            let tempCriteriaEvaluations = {};
-            criteria.map(i => {
-                let tempObj = {};
-                options.map(ii => tempObj[ii] = 5);
-                tempCriteriaEvaluations[i] = tempObj;
+            let tempCriteriaEvaluations = [];
+            criteria.map((i, n) => {
+                let tempArr = [];
+                options.forEach((ii, nn) => tempArr[nn] = 5);
+                tempCriteriaEvaluations[n] = tempArr;
             });
             updateCriteriaEvaluations(tempCriteriaEvaluations);
         }
@@ -56,6 +36,84 @@ export default function Tool() {
             updateStage(4);
         }
     }, [criteriaEvaluations]);
+
+    function Option({ optionName, optionCriteriaEvals }) {
+        return (
+            <div style={{
+                boxShadow: "0px 0px 10px 5px lavender",
+                padding: "20px",
+                borderRadius: "20px",
+                margin: "20px"
+            }}>
+                <h3>{optionName}</h3>
+                {optionCriteriaEvals().map((i, n) => 
+                    <div key={n}>
+                        <p style={{
+                            marginBottom: "0"
+                        }}><span style={{
+                            color: criteriaPolarity[n] ? "darkgreen" : "darkred",
+                            fontWeight: "500"
+                        }}><span className={notoSansSymbols.className}>{criteriaPolarity[n] ? "☺" : "☹"}</span> {criteria[n]}:</span></p>
+                        <meter max="10" min="0" low={criteriaPolarity[n] ? 3 : 2} high={criteriaPolarity[n] ? 8 : 7} optimum={criteriaPolarity[n] ? 10 : 0} value={optionCriteriaEvals()[n]} style={{
+                            marginTop: "0"
+                        }}></meter>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    function determineBestOptions() {
+        let scores = [];
+        let bestScore = null;
+        options.forEach((i, n) => {
+            let overallScore = 0;
+            criteria.forEach((ii, nn) => {
+                overallScore = overallScore + Number(criteriaPolarity[nn] ? criteriaEvaluations[nn][n] : -1*(criteriaEvaluations[nn][n]));
+            });
+            if (overallScore > bestScore || bestScore == null) {
+                bestScore = overallScore;
+            }
+            scores.push(overallScore);
+        });
+
+        let tiedOptions = [];
+        options.forEach((i, n) => {
+            if (scores[n] == bestScore) {
+                tiedOptions.push(n);
+            }
+        });
+
+        if (tiedOptions.length > 1) {
+            for (let n in criteria) {
+                let currentHigh = criteriaPolarity[n] ? -1 : 11;
+                let theseScores = [];
+                for (let nn in options) {
+                    theseScores.push(criteriaEvaluations[n][nn]);
+                    if (criteriaPolarity[n] ? (criteriaEvaluations[n][nn] > currentHigh) : (criteriaEvaluations[n][nn] < currentHigh)) {
+                        currentHigh = criteriaEvaluations[n][nn];
+                    }
+                }
+
+                let tiedScores = [];
+                options.forEach((i, n) => {
+                    if (theseScores[n] == currentHigh) {
+                        tiedScores.push(n);
+                    }
+                });
+
+                if (tiedScores.length == 1) {
+                    return options[tiedScores[0]];
+                } else {
+                    if (n == (criteria.length - 1)) {
+                        return <><span style={{fontWeight: "400"}}>it's a tie between these: </span><span style={{fontWeight: "600"}}>{(tiedScores.map((i, n) => options[n])).toString()}</span></>;
+                    }
+                }
+            }
+        } else {
+            return options[tiedOptions[0]];
+        }
+    }
 
     return (
         <div style={{
@@ -73,7 +131,7 @@ export default function Tool() {
             {stage == 0 ?
             <>
                 <h2 className={styles.prompt}>What decision are you trying to make?</h2>
-                <input value={decisionName} onChange={e => updateDecisionName(e.target.value)} type="text" />
+                <input value={decisionName} onChange={e => updateDecisionName(e.target.value)} type="text" className={montserrat.className} />
             </>
             : (stage == 1 ?
             <>
@@ -94,21 +152,30 @@ export default function Tool() {
             : (stage == 2 ?
                 <>
                     <h2 className={styles.prompt}>What are your criteria?</h2>
+                    <h3 style={{
+                        marginTop: "0",
+                        fontWeight: "600"
+                    }}>Make sure to put them in priority order!</h3>
                     {criteria.map((i, n) => {
                         return <div key={n} style={{
                             display: "flex",
                             gap: "20px"
                         }}>
+                            <label htmlFor={n} style={{
+                                fontWeight: "500",
+                                marginTop: "auto",
+                                marginBottom: "auto",
+                                marginRight: "0"
+                            }}>#{n+1}</label>
                             <input type="text" value={i} onChange={e => {
                                 let tempCriteria = criteria.slice();
                                 tempCriteria.splice(n, 1, e.target.value);
                                 updateCriteria(tempCriteria);
-                            }} className={montserrat.className} />
+                            }} className={montserrat.className} id={n} />
                             <div style={{
                                 display: "flex"
                             }}>
                                 <input type="radio" name={n} className={`${styles.icon} ${styles.smile} ${notoSansSymbols.className}`} checked={criteriaPolarity[n]} onChange={(e) => {
-                                    console.log(criteriaPolarity);
                                     let tempCriteriaPolarity = criteriaPolarity.slice();
                                     tempCriteriaPolarity.splice(n, 1, e.target.checked);
                                     updateCriteriaPolarity(tempCriteriaPolarity);
@@ -137,18 +204,18 @@ export default function Tool() {
                         <div key={i.concat(n)}>
                             <h3>{i}</h3>
                             {options.map((ii, nn) => (
-                                <div key={ii.concat(nn)} style={{
+                                <div key={n.toString().concat(nn)} style={{
                                     display: "flex",
                                     flexFlow: "column wrap",
                                     alignItems: "end"
                                 }}>
                                     <div>
-                                        <label htmlFor={i.toString().concat(ii.toString())}>{ii}</label>
-                                        <input type="range" min="0" max="10" value={criteriaEvaluations[i][ii]} onChange={e => {
-                                            let tempCriteriaEvaluations = {...criteriaEvaluations};
-                                            tempCriteriaEvaluations[i][ii] = e.target.value;
+                                        <label htmlFor={n.toString().concat(nn)}>{ii}</label>
+                                        <input type="range" min="0" max="10" value={criteriaEvaluations[n][nn]} onChange={e => {
+                                            let tempCriteriaEvaluations = criteriaEvaluations.slice();
+                                            tempCriteriaEvaluations[n][nn] = e.target.value;
                                             updateCriteriaEvaluations(tempCriteriaEvaluations);
-                                        }} id={i.toString().concat(ii.toString())} list={"list".concat(i.toString().concat(ii.toString()))} style={{
+                                        }} id={n.toString().concat(nn)} list={"list".concat(i.toString().concat(ii.toString()))} style={{
                                             width: "150px"
                                         }} />
                                     </div>
@@ -179,14 +246,24 @@ export default function Tool() {
             : (stage == 5 ?
                 <>
                     <h2 className={styles.prompt}>Let's take a look.</h2>
+                    <h3 style={{
+                        marginBottom: "0",
+                        marginTop: "0",
+                        fontWeight: "600"
+                    }}>{decisionName}</h3>
+                    <h3 style={{
+                        marginTop: "0"
+                    }}><span style={{
+                        fontWeight: "600"
+                    }}>Best Option: </span>{determineBestOptions()}</h3>
                     <div style={{
                         display: "flex",
                         flexFlow: "row wrap"
                     }}>
                         {options.map((i, n) => <Option optionName={i} key={n} optionCriteriaEvals={() => {
-                            let tempOptionCriteriaEvals = {};
+                            let tempOptionCriteriaEvals = [];
                             criteria.forEach((ii, nn) => {
-                                tempOptionCriteriaEvals[ii] = criteriaEvaluations[ii][i];
+                                tempOptionCriteriaEvals[nn] = criteriaEvaluations[nn][n];
                             });
                             return tempOptionCriteriaEvals;
                         }} criteriaPolarity={criteriaPolarity} />)}
@@ -194,7 +271,9 @@ export default function Tool() {
                 </>
             : null))))}
             {stage < 5 ?
-                <button onClick={() => updateStage(stage + 1)} className={`${montserrat.className} primaryButton`}>Next</button>
+                <button onClick={() => {
+                    updateStage(stage + 1);
+                }} className={`${montserrat.className} primaryButton`}>Next</button>
             : null}
         </div>
     );

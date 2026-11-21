@@ -1,36 +1,17 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Decision Maker
+A tool that helps you make decisions! You enter your options, select and evaluate criteria, and see which one the tool picks. Made with Next.js and VS Code.
 
-## Getting Started
+## How to Run
+Open up madelyngh.github.io/decision-maker in your browser.
 
-First, run the development server:
+## How to Use
+1. Enter in the what decision you're making (eg. "Which dog breed to get")
+2. List your options (eg. "Golden Retriever," "Boston Terrier," "Siberian Husky")
+3. List your criteria in priority order and whether they are positive or negative (eg. "Maintenance Level" - negative, "Personality Goodness" - positive, "Cuteness" - positive)
+4. For each criteria, evaluate all the options on a scale from 0 to 10.
+5. Finally, the tool will display the best option(s). You can also look at a breakdown of each option.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## The Algorithm (for the curious)
+*Note: there is a possibility of there being bugs in the algorithm, idk; the following description is what the algorithm is supposed to be.*
+First, it evaluates a numerical score for each option, where it adds the values of the positive criteria to the score and subtracts the values of the negative criteria from the score.
+The option with the highest score is selected, UNLESS there is a tie, in which case, for all the options that were included in the tie: it goes through the criteria from highest to lowest priority until ONE of the options is the highest in that criteria (without there being a tie for that criteria); that option is selected.
